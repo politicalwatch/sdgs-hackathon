@@ -35,6 +35,19 @@ from nltk.probability import FreqDist
 from nltk.corpus import stopwords as swords
 from stop_words import get_stop_words
 from sklearn.feature_extraction.text import TfidfVectorizer
+import pickle
+
+# %% [markdown]
+# # Load the dataset
+
+# %%
+df = pd.read_pickle('initiatives.pkl') 
+
+# %%
+df.head()
+
+# %%
+df.shape
 
 
 # %% [markdown]
