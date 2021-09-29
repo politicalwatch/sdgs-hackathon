@@ -120,7 +120,7 @@ def remove_numbers(col):
 
 
 def unique_words(col):
-    col.str.lower().str.findall("\w+")
+    words = col.str.lower().str.findall("\w+")
     unique = set()
 
     for x in words:
