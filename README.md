@@ -2,7 +2,7 @@
 [Here](https://docs.google.com/presentation/d/1rJiktogdsrhGscJuwffyAooUCqdoDhx2lysi4e6cHPw/edit?usp=sharing) you can find a presentation explaining who we are and the problem we want to solve.
 
 ## Dataset
-The dataset can be found in this [Google Drive folder](https://github.com/politicalwatch/sdgs-hackathon).
+The dataset can be found in this [Google Drive folder](https://drive.google.com/drive/u/1/folders/1PYNuV5JRjqxMQ1sygQOC_sTP-oByPwTp).
 
 ### Files you can find in the dataset
 - categories.json: Is a JSON file that contains all of our current categorization. It has three levels: Topic, Subtopic and tag. We only need the first level of categories for this model.
