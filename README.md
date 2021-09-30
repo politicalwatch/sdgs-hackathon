@@ -11,3 +11,6 @@ The dataset can be found in this [Google Drive folder](https://drive.google.com/
 
 ## Call link
 [Jitsi room](https://meet.jit.si/PoliticalWatchHackaton)
+
+## Dev notes
+For better versioning, please install Jupytext and [follow this guide](https://jupytext.readthedocs.io/en/latest/paired-notebooks.html).
