@@ -26,15 +26,6 @@
 # !pip install spacy-stanza
 
 # %%
-import nltk
-nltk.download('stopwords')
-# Download the stanza model if necessary
-stanza.download("es")
-
-# Initialize the pipeline
-nlp = spacy_stanza.load_pipeline("es")
-
-# %%
 import pandas as pd
 import numpy as np
 import re
@@ -47,6 +38,13 @@ import pickle
 import stanza
 import spacy_stanza
 import itertools
+import nltk
+nltk.download('stopwords')
+# Download the stanza model if necessary
+stanza.download("es")
+
+# Initialize the pipeline
+nlp = spacy_stanza.load_pipeline("es")
 
 # %% [markdown]
 # # Load the dataset
