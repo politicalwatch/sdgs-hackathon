@@ -14,6 +14,9 @@
 # ---
 
 # %% [markdown]
+# This file transforms the dataset so that we remove all unnecessary characters, accents, stop words and stems the words to reduce the vocabulary
+
+# %% [markdown]
 # # Import libraries
 
 # %% [markdown]
@@ -41,6 +44,10 @@ import spacy_stanza
 import itertools
 import nltk
 from nltk.stem import SnowballStemmer
+from matplotlib import pyplot as plt
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+import json
+
 nltk.download('stopwords')
 # Download the stanza model if necessary
 stanza.download("es")
@@ -67,7 +74,7 @@ df['content_coalesce'] = df['content'].combine_first(df['title'])
 df[df['content'].isna()][['content_coalesce','title','content']]
 
 # %%
-# THIS FLATTENS
+# THIS FLATTENS the conetent from lists to str
 df['content_coalesce'] = [''.join(l) for l in df['content_coalesce']]
 
 
@@ -171,12 +178,9 @@ stop_words = [unidecode.unidecode(each_string.lower()) for each_string in stop_w
 len(stop_words)
 
 # %% [markdown]
-# # Demo Wordcloud
+# # Wordcloud Per Category
 
 # %%
-from matplotlib import pyplot as plt
-from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-
 # example usage: test_df = create_df_from_json('./small-batch.json')
 test_df = create_df_from_json('small-batch.json') 
 
@@ -197,47 +201,35 @@ for i, row in grouped.iteritems():
         show_cloud(i)
 
 # %% [markdown]
+# # Spot check
+
+# %%
+# list(df[df._id == 'ea99726d258373625ba3210f46c8ae07113ce965']['content'])
+
+# %% [markdown]
 # # Apply transformations one-by-one
 
-# %%
-df['count'] = df['content_coalesce'].str.split().str.len()
-df['count2'] = df['t5_stopwords_removed'].str.split().str.len()
+# %% [markdown]
+# ## Original content
 
 # %%
-df['count'].sum()
+unique_words_using_vectorizer(df['content_coalesce'])
 
-# %%
-df['count2'].sum()
-
-# %%
-list(df[df._id == 'ea99726d258373625ba3210f46c8ae07113ce965']['content'])
-
-# %%
-from collections import Counter
-from itertools import chain
-
-counter = Counter(chain.from_iterable(map(str.split, df.t5_stopwords_removed.tolist()))) 
-
-# %%
-counter
-
-# %%
-unique = unique_words(df['content_coalesce'])
-print("Nr of words: " + str(len(list(unique))))
-
-# %%
-unique = unique_words(df['t5_stopwords_removed'])
-print("Nr of words: " + str(len(list(unique))))
+# %% [markdown]
+# ## Remove accents
 
 # %%
 df['t1_no_accents'] = df.apply(lambda row:remove_accents(row,'content_coalesce'),axis=1)
 df['t1_no_accents'].head()
 
 # %%
-list(df[df._id == 'ea99726d258373625ba3210f46c8ae07113ce965']['t1_no_accents'])
+# list(df[df._id == 'ea99726d258373625ba3210f46c8ae07113ce965']['t1_no_accents'])
 
 # %%
 unique_words_using_vectorizer(df['t1_no_accents'])
+
+# %% [markdown]
+# ## Remove numbers
 
 # %%
 df['t2_no_numbers'] = remove_numbers(df['t1_no_accents']) 
@@ -246,12 +238,18 @@ df['t2_no_numbers'].head()
 # %%
 unique_words_using_vectorizer(df['t2_no_numbers'])
 
+# %% [markdown]
+# ## Remove special characters
+
 # %%
 df['t3_no_special_char'] = df['t2_no_numbers'].apply(lambda row:replace_special_char(row))
 df['t3_no_special_char'].head()
 
 # %%
 unique_words_using_vectorizer(df['t3_no_special_char'])
+
+# %% [markdown]
+# ## Lowercase all
 
 # %%
 df['t4_lowercase'] = df['t3_no_special_char'].str.lower()
@@ -260,6 +258,9 @@ df['t4_lowercase'].head()
 # %%
 unique_words_using_vectorizer(df['t4_lowercase'])
 
+# %% [markdown]
+# ## Remove Stopwords
+
 # %%
 df['t5_stopwords_removed'] = df['t4_lowercase'].apply(lambda row:remove_stopwords(row, stop_words))
 df['t5_stopwords_removed'].head()
@@ -267,37 +268,52 @@ df['t5_stopwords_removed'].head()
 # %%
 unique_words_using_vectorizer(df['t5_stopwords_removed'])
 
+# %% [markdown]
+# ## Stem words
+
 # %%
 df['t6_stemming'] = df["t5_stopwords_removed"].apply(lambda row: [stemmer.stem(x) for x in row.split(" ")])
 df['t6_stemming'].head()
 
 # %%
-# THIS FLATTENS
+# THIS FLATTENS the list from list to str
 df['t6_stemming'] = [' '.join(l) for l in df['t6_stemming']]
 
 # %%
 unique_words_using_vectorizer(df['t6_stemming'])
 
-# %%
-# remove punctuations, tabs, etc
-df.apply(lambda row:space_out_your_text(row['lowered']),axis=1)
-#Lower case
-df.apply(lambda row: row['text'].lower(), axis=1)
-df['removed_num'] = df.apply(lambda row: remove_numbers(row['text']), axis=1)
+# %% [markdown]
+# # Checkpoint
 
 # %%
-df2['tokenized_sents'] = df2.apply(lambda row: nlp(row['removed_num']), axis=1)
-df2['tokenized_sents_str'] = df2.tokenized_sents.apply(lambda x:str(x))
+save_cols = ['_id', 'author_parliamentarygroups', 'created', 'initiative_type',
+       'initiative_type_alt', 'reference', 'status', 'tagged', 'title',
+       'updated', 'url', 'tags', 'topics', 'history', 'author_others', 'place',
+       'content', 'extra', 'author_deputies', 'content_coalesce', 't6_stemming']
+df[save_cols].to_csv("preprocessed.csv")
 
-infreq = freq_dataframe[freq_dataframe['Counts'] < 3 ]['Word'].tolist()
+# %%
+# df2['tokenized_sents'] = df2.apply(lambda row: nlp(row['removed_num']), axis=1)
+# df2['tokenized_sents_str'] = df2.tokenized_sents.apply(lambda x:str(x))
+
+# infreq = freq_dataframe[freq_dataframe['Counts'] < 3 ]['Word'].tolist()
 
 
-df2['removed_infreq'] = df2.tokenized_sents_str.apply(lambda x: remove_stopwords(x,infreq))
-df2['removed_infreq_str'] = df2.removed_infreq.apply(lambda x:str(x))
+# df2['removed_infreq'] = df2.tokenized_sents_str.apply(lambda x: remove_stopwords(x,infreq))
+# df2['removed_infreq_str'] = df2.removed_infreq.apply(lambda x:str(x))
 
 
 
-v = TfidfVectorizer()
-x = v.fit_transform(df2['removed_infreq_str'])
-x.todense()
-len(v.vocabulary_)
+# v = TfidfVectorizer()
+# x = v.fit_transform(df2['removed_infreq_str'])
+# x.todense()
+# len(v.vocabulary_)
+
+# %%
+# from collections import Counter
+# from itertools import chain
+
+# counter = Counter(chain.from_iterable(map(str.split, df.t5_stopwords_removed.tolist())))
+
+# df['count'] = df['content_coalesce'].str.split().str.len()
+# df['count2'] = df['t5_stopwords_removed'].str.split().str.len()
