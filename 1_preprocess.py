@@ -114,8 +114,27 @@ def remove_accents(row,column):
 
 #remove special characters
 def replace_special_char(row):
-    for word, initial in {".":" ", "-":" ","/":" ","@":" ","#":" ","(":" ",")":" ",'"' : ""," ,":"", ">":"","<":"","*":"",\
-                          ",":" "}.items(): #special case - comma becomes space just in case
+    for word, initial in {".":" ", 
+                          "-":" ",
+                          "/":" ",
+                          "@":" ",
+                          "#":" ",
+                          "(":" ",
+                          ")":" ",
+                          '"' : "",
+                          " ,":"", 
+                          ">":"",
+                          "<":"",
+                          "*":"",
+                          ",":" ",
+                          ":":"",
+                          "?":"",
+                          "'":"",
+                          "%":"",
+                          "+":" ",
+                          "&":"",
+                          "\n":" ",
+                         "\\":""}.items(): #special case - comma becomes space just in case
         row = row.replace(word, initial) 
     return row
 
@@ -179,6 +198,9 @@ len(stop_words)
 
 # %% [markdown]
 # # Wordcloud Per Category
+
+# %%
+test_df.initiative_type_alt.value_counts()
 
 # %%
 # example usage: test_df = create_df_from_json('./small-batch.json')
